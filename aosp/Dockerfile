@@ -18,20 +18,22 @@ RUN apt-get update ; \
     python genisoimage bc wget
 
 
-# For Android7+ -- download and install OpenJDK8
-#RUN cd /tmp; wget -c http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb ; \
-#    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb ; \
-#    wget -c http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb ; \
-#    dpkg -i openjdk-8-jre-headless_8u45-b14-1_amd64.deb openjdk-8-jre_8u45-b14-1_amd64.deb openjdk-8-jdk_8u45-b14-1_amd64.deb
+# download OpenJDK8
+# RUN cd /tmp; wget -c http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb
+# RUN cd /tmp; wget -c http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb
+# RUN cd /tmp; wget -c http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb
 
 #
-# For Android 5-6: install OpenJDK7
+# OR install OpenJDK7
 #
-RUN sudo apt-get install -y openjdk-7-jdk
+RUN sudo apt-get install -y openjdk-7-jdk ; \
+    update-alternatives --config java ; \
+    update-alternatives --config javac
 
-#
-# Configure java and javac, create a working directory
-#
-RUN update-alternatives --config java ; \
-    update-alternatives --config javac ; \
-    mkdir -p /work
+# Create a non-root user that will perform the actual build
+RUN id build 2>/dev/null || useradd --uid 1000 --create-home build
+RUN echo "build ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
+
+USER build
+WORKDIR /work
+CMD "/bin/bash"
